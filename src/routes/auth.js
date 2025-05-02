@@ -1,5 +1,5 @@
 const express = require("express");
-const authentication = require("../middlewaares/authMiddleware");
+const authentication = require("../middlewares/authMiddleware");
 const { blackListToken } = require("../utils/token_blacklist");
 const { verifyPassword } = require("../utils/hash");
 const { generateToken } = require("../utils/jwt-token");

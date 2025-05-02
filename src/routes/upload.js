@@ -5,7 +5,7 @@ const fs = require("fs");
 const router = express.Router();
 
 const { BASE_DIRECTORY } = require("../config/env");
-const authentication = require("../middlewaares/authMiddleware");
+const authentication = require("../middlewares/authMiddleware");
 const {
   generateThumbnail,
   supportedImageTypes,

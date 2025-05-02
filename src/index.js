@@ -1,5 +1,4 @@
 const express = require("express");
-const path = require("path");
 const { BASE_DIRECTORY, PORT } = require("./config/env");
 
 const app = express();
@@ -30,6 +29,9 @@ app.use("/api/list", listRoutes);
 
 const folderRoutes = require("./routes/folder");
 app.use("/api/folder", folderRoutes);
+
+const userRoutes = require("./routes/users");
+app.use("/api/users", userRoutes);
 
 // Root
 app.get("/", (req, res) => {
