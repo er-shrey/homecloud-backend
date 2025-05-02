@@ -158,8 +158,6 @@ GET /api/health
 - [x] Token blacklist mechanism
 - [x] File/folder previews
 - [ ] Recursive thumbnail generation
-- [ ] API rate limiting
-- [ ] mDNS/DNS config for local name resolution
 - [ ] Frontend (Angular/Flutter)
 
 ---

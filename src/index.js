@@ -9,6 +9,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Static files
 app.use(
+  "/api/files",
   express.static(BASE_DIRECTORY, {
     dotfiles: "allow",
   })

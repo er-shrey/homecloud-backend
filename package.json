@@ -10,7 +10,8 @@
     "stop:pm2": "pm2 stop homecloud-backend",
     "db:init": "node scripts/init-db.js",
     "create:admin": "node scripts/create-admin.js",
-    "install": "npm install && npm run db:init && npm run create:admin"
+    "install": "npm install && npm run db:init && npm run create:admin",
+    "cleanup:blacklist-token": "node scripts/cleanup_blacklist_token.js"
   },
   "comments": {
     "start": "Run the app in production with 'npm start'",
