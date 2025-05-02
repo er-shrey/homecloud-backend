@@ -5,6 +5,7 @@ const fs = require("fs");
 const router = express.Router();
 
 const { BASE_DIRECTORY } = require("../config/env");
+const authentication = require("../middlewaares/authMiddleware");
 const {
   generateThumbnail,
   supportedImageTypes,
@@ -27,7 +28,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 // Middleware to parse the form data and file upload
-router.post("/", upload.single("file"), async (req, res) => {
+router.post("/", authentication, upload.single("file"), async (req, res) => {
   try {
     // Ensure folderPath is in the request body (form data)
     const folderPath = req.body.folderPath || "";

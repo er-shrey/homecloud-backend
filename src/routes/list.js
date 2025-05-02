@@ -3,7 +3,7 @@ const fs = require("fs");
 const path = require("path");
 const router = express.Router();
 const { BASE_DIRECTORY } = require("../config/env");
-
+const authentication = require("../middlewaares/authMiddleware");
 const {
   generateThumbnail,
   supportedImageTypes,
@@ -62,7 +62,7 @@ const getThumbnailUrl = (relativePath, itemName, isDirectory) => {
 };
 
 // GET /api/list?path=/folderA
-router.get("/", async (req, res) => {
+router.get("/", authentication, async (req, res) => {
   try {
     const relPath = req.query.path || "/";
     if (!isPathSafe(relPath)) {

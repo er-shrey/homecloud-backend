@@ -2,11 +2,12 @@ const express = require("express");
 const fs = require("fs");
 const path = require("path");
 const { BASE_DIRECTORY } = require("../config/env");
+const authentication = require("../middlewaares/authMiddleware");
 
 const router = express.Router();
 
 // **Create Folder API**
-router.post("/create", (req, res) => {
+router.post("/create", authentication, (req, res) => {
   const { folderPath, folderName } = req.body;
 
   if (!folderPath || !folderName) {
@@ -51,7 +52,7 @@ router.post("/create", (req, res) => {
 });
 
 // **Rename Folder API**
-router.put("/rename", (req, res) => {
+router.put("/rename", authentication, (req, res) => {
   const { oldFolderPath, newFolderName } = req.body;
 
   if (!oldFolderPath || !newFolderName) {

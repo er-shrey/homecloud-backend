@@ -19,6 +19,9 @@ app.use(
 const healthRoute = require("./routes/health");
 app.use("/api/health", healthRoute);
 
+const authRoutes = require("./routes/auth");
+app.use("/api/auth", authRoutes);
+
 const uploadRoutes = require("./routes/upload");
 app.use("/api/upload", uploadRoutes);
 
