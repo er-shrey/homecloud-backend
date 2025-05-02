@@ -8,9 +8,11 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Static files
 app.use(
-  "/thumbnails",
-  express.static(path.join(BASE_DIRECTORY, ".Thumbnails"))
+  express.static(BASE_DIRECTORY, {
+    dotfiles: "allow",
+  })
 );
 
 // Routes
