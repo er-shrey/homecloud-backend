@@ -1,17 +1,14 @@
-require("dotenv").config();
 const express = require("express");
-const bcrypt = require("bcrypt");
-const Database = require("better-sqlite3");
-const jwt = require("jsonwebtoken");
 const authentication = require("../middlewaares/authMiddleware");
 const { blackListToken } = require("../utils/token_blacklist");
+const { verifyPassword } = require("../utils/hash");
+const { generateToken } = require("../utils/jwt-token");
+const db = require("../utils/db");
+
 const router = express.Router();
 
-const dbPath = process.env.SQLITE_DB_PATH;
-const db = new Database(dbPath);
-
 // POST /api/auth/login - Login route to generate JWT token
-router.post("/login", (req, res) => {
+router.post("/login", async (req, res) => {
   const { username, password } = req.body;
 
   // Query database for user
@@ -23,25 +20,18 @@ router.post("/login", (req, res) => {
   }
 
   // Compare password
-  bcrypt.compare(password, user.password, (err, isMatch) => {
-    if (err || !isMatch) {
-      return res.status(400).json({ error: "Invalid credentials" });
-    }
+  const isPasswordMatch = await verifyPassword(password, user.password_hash);
+  if (!isPasswordMatch) {
+    return res.status(400).json({ error: "Invalid credentials" });
+  }
 
-    // Generate JWT token
-    const token = jwt.sign(
-      { userId: user.id, role: user.role },
-      process.env.JWT_SECRET,
-      {
-        expiresIn: process.env.JWT_EXPIRES_IN || "7d", // Default expiry time 7 days
-      }
-    );
+  // Generate JWT token
+  const token = generateToken({ userId: user.id, role: user.role });
 
-    return res.json({
-      success: true,
-      message: "Login successful",
-      token,
-    });
+  return res.json({
+    success: true,
+    message: "Login successful",
+    token,
   });
 });
 

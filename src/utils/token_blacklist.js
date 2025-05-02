@@ -1,20 +1,19 @@
 require("dotenv").config();
-const Database = require("better-sqlite3");
-
-const dbPath = process.env.SQLITE_DB_PATH;
-const db = new Database(dbPath);
+const db = require("./db");
+const { getExpiryTime } = require("./jwt-token");
 
 const blackListToken = (token) => {
+  const expiryTime = getExpiryTime(token);
   // Blacklist the token (store it in the database)
   const blacklist_token = db.prepare(
-    "INSERT INTO jwt_blacklist (token) VALUES (?)"
+    "INSERT INTO jwt_blacklist (token, expiry) VALUES (?, ?)"
   );
-  blacklist_token.run(token);
+  blacklist_token.run(token, expiryTime);
 };
 
 const isTokenBlacklisted = (token) => {
   const tokenDetails = db.prepare(
-    "SELECT 1 FROM blacklisted_tokens WHERE token = ?"
+    "SELECT 1 FROM jwt_blacklist WHERE token = ?"
   );
   const result = tokenDetails.get(token);
   return result !== undefined;

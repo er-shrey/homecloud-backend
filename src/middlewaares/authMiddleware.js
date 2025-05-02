@@ -1,5 +1,6 @@
-const jwt = require("jsonwebtoken");
+const { verifyToken } = require("../utils/jwt-token");
 const { isTokenBlacklisted } = require("../utils/token_blacklist");
+
 const authentication = (req, res, next) => {
   const token = req.header("Authorization")?.replace("Bearer ", "");
 
@@ -14,7 +15,7 @@ const authentication = (req, res, next) => {
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = verifyToken(token);
     req.user = decoded; // Attach user info to the request object
     next();
   } catch (err) {

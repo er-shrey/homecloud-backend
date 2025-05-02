@@ -1,6 +1,6 @@
 require("dotenv").config();
 const readline = require("readline");
-const bcrypt = require("bcrypt");
+const { hashPassword } = require("../src/utils/hash");
 const path = require("path");
 const fs = require("fs");
 const Database = require("better-sqlite3");
@@ -44,7 +44,7 @@ const ask = (question) =>
     process.exit(1);
   }
 
-  const password_hash = await bcrypt.hash(password, 10);
+  const password_hash = await hashPassword(password);
 
   db.prepare(
     `
