@@ -7,23 +7,20 @@ const supportedImageTypes = [".jpg", ".jpeg", ".png", ".webp"];
 const supportedPdfTypes = [".pdf"];
 
 // Function to generate PDF thumbnail using Poppler (pdftoppm)
-const generatePdfThumbnail = async (filePath, thumbPath) => {
-  try {
-    // Using Poppler's pdftoppm to generate a thumbnail for the first page of the PDF
-    const command = `pdftoppm -jpeg -scale-to 200 -f 1 -l 1 ${filePath} ${thumbPath}`;
-    return new Promise((resolve, reject) => {
-      exec(command, (err, stdout, stderr) => {
-        if (err || stderr) {
-          reject(`Error generating PDF thumbnail: ${stderr}`);
-        } else {
-          resolve();
-        }
-      });
+const generatePdfThumbnail = (filePath, thumbPathWithoutExt) => {
+  return new Promise((resolve, reject) => {
+    const command = `pdftoppm -jpeg -singlefile "${filePath}" "${thumbPathWithoutExt}"`;
+
+    exec(command, (error, stdout, stderr) => {
+      const finalThumbPath = `${thumbPathWithoutExt}.jpg`;
+      if (fs.existsSync(finalThumbPath)) {
+        resolve(finalThumbPath); // thumbnail generated even if error occurred
+      } else {
+        console.error("Error generating PDF thumbnail:", stderr || error);
+        resolve(null);
+      }
     });
-  } catch (error) {
-    console.error("Error generating PDF thumbnail:", error);
-    throw error;
-  }
+  });
 };
 
 const generateThumbnail = async (filePath, baseDirectory) => {
@@ -32,15 +29,19 @@ const generateThumbnail = async (filePath, baseDirectory) => {
     const maxWidth = 200;
     const maxHeight = 200;
 
-    const originalDir = path.dirname(filePath);
+    // Get relative path from baseDirectory
+    const relativeFilePath = path.relative(baseDirectory, filePath);
+    const originalDir = path.dirname(relativeFilePath);
     const thumbnailDir = path.join(originalDir, ".thumbnails");
 
     // Ensure the .thumbnails directory exists
-    fs.mkdirSync(thumbnailDir, { recursive: true });
+    const absoluteThumbnailDir = path.join(baseDirectory, thumbnailDir);
+    fs.mkdirSync(absoluteThumbnailDir, { recursive: true });
 
     // Use the original file name as the thumbnail name
     const thumbName = path.basename(filePath);
-    const thumbPath = path.join(thumbnailDir, thumbName);
+    const relativeThumbPath = path.join(thumbnailDir, thumbName);
+    const absoluteThumbPath = path.join(baseDirectory, relativeThumbPath);
 
     // Check if it's an image
     if (supportedImageTypes.includes(fileExtension)) {
@@ -49,19 +50,22 @@ const generateThumbnail = async (filePath, baseDirectory) => {
 
       // If image is smaller than the max width/height, copy it directly
       if (metadata.width <= maxWidth && metadata.height <= maxHeight) {
-        fs.copyFileSync(filePath, thumbPath);
+        fs.copyFileSync(filePath, absoluteThumbPath);
       } else {
         // Resize and save the thumbnail
-        await image.resize({ width: maxWidth }).toFile(thumbPath);
+        await image.resize({ width: maxWidth }).toFile(absoluteThumbPath);
       }
     } else if (supportedPdfTypes.includes(fileExtension)) {
       // Generate PDF thumbnail (using Poppler or any other method)
-      const pdfThumbPath = path.join(thumbnailDir, `${thumbName}.jpg`);
-      await generatePdfThumbnail(filePath, pdfThumbPath);
-      return pdfThumbPath;
+      const relativePdfThumbPath = path.join(thumbnailDir, `${thumbName}`);
+      const absolutePdfThumbPath = path.join(
+        baseDirectory,
+        relativePdfThumbPath
+      );
+      await generatePdfThumbnail(filePath, absolutePdfThumbPath);
+      return relativePdfThumbPath + ".jpg";
     }
-
-    return thumbPath;
+    return relativeThumbPath;
   } catch (error) {
     console.error("Error generating thumbnail:", error);
     return null;

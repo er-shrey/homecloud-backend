@@ -4,8 +4,23 @@ const path = require("path");
 const router = express.Router();
 const { BASE_DIRECTORY } = require("../config/env");
 
+const {
+  generateThumbnail,
+  supportedImageTypes,
+  supportedPdfTypes,
+} = require("../utils/thumbnail");
+
 const BASE_DIR = path.resolve(BASE_DIRECTORY);
-const THUMBNAIL_ROUTE_PREFIX = "/thumbnails"; // static mount
+
+const allSupportedThumbTypes = [...supportedImageTypes, ...supportedPdfTypes];
+const FALLBACK_ROUTE_PREFIX = "/fallbacks/thumbnail";
+
+const fallbackThumbnails = {
+  ".zip": "zip_thumbnail.png",
+  ".exe": "exe_thumbnail.png",
+  folder: "folder_thumbnail.png",
+  default: "unknown_file_thumbnail.png",
+};
 
 // Utility to check if a path is within BASE_DIR
 const isPathSafe = (targetPath) => {
@@ -14,21 +29,35 @@ const isPathSafe = (targetPath) => {
 };
 
 // Generate thumbnail URL from path
-const getThumbnailUrl = (relativePath, itemName) => {
-  const thumbnailPath = path.join(
-    BASE_DIR,
-    relativePath,
-    ".Thumbnails",
-    itemName
-  );
-  const fallback = "/fallbacks/file.png"; // you can change this
+const getThumbnailUrl = (relativePath, itemName, isDirectory) => {
+  const baseName = path.parse(itemName).name;
+  const ext = path.extname(itemName).toLowerCase();
+  const thumbnailDir = path.join(BASE_DIR, relativePath, ".thumbnails");
 
-  if (fs.existsSync(thumbnailPath)) {
-    return `${THUMBNAIL_ROUTE_PREFIX}${path
-      .join(relativePath, itemName)
-      .replace(/\\/g, "/")}`;
+  // Check for supported thumbnails
+  let expectedThumbPath;
+  if (allSupportedThumbTypes.includes(ext)) {
+    if (ext === ".pdf") {
+      expectedThumbPath = `${baseName}${ext}.jpg`;
+    } else {
+      expectedThumbPath = `${baseName}.jpg`;
+    }
+    const thumbnailPath = path.join(thumbnailDir, expectedThumbPath);
+    if (fs.existsSync(thumbnailPath)) {
+      const thumbnailRelativePath = path
+        .join(relativePath, ".thumbnails", expectedThumbPath)
+        .replace(/\\/g, "/");
+      return `${thumbnailRelativePath}`;
+    }
+  }
+
+  // Fallbacks for known types
+  if (isDirectory) {
+    return `${FALLBACK_ROUTE_PREFIX}/${fallbackThumbnails.folder}`;
+  } else if (ext in fallbackThumbnails) {
+    return `${FALLBACK_ROUTE_PREFIX}/${fallbackThumbnails[ext]}`;
   } else {
-    return fallback;
+    return `${FALLBACK_ROUTE_PREFIX}/${fallbackThumbnails.default}`;
   }
 };
 
@@ -45,21 +74,22 @@ router.get("/", async (req, res) => {
       return res.status(404).json({ error: "Path not found." });
     }
 
-    const entries = await fs.promises.readdir(fullPath, {
-      withFileTypes: true,
-    });
+    const entries = (
+      await fs.promises.readdir(fullPath, { withFileTypes: true })
+    ).filter((entry) => entry.name !== ".thumbnails");
 
     const items = await Promise.all(
       entries.map(async (entry) => {
         const itemPath = path.join(fullPath, entry.name);
         const stat = await fs.promises.stat(itemPath);
+        const isDirectory = stat.isDirectory();
 
         return {
           name: entry.name,
           type: entry.isDirectory() ? "directory" : "file",
           size: entry.isFile() ? stat.size : undefined,
           lastModified: stat.mtime,
-          thumbnail: getThumbnailUrl(relPath, entry.name),
+          thumbnail: getThumbnailUrl(relPath, entry.name, isDirectory),
         };
       })
     );

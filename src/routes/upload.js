@@ -56,10 +56,11 @@ router.post("/", upload.single("file"), async (req, res) => {
         BASE_DIRECTORY
       );
       if (thumbPath) {
+        console.log("thumbPath", thumbPath);
         const publicUrl = thumbPath
           .replace(BASE_DIRECTORY, "")
           .replace(/\\/g, "/");
-        thumbnailUrl = `/thumbnails${publicUrl}`;
+        thumbnailUrl = `/${publicUrl}`;
       }
     }
 
