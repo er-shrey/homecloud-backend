@@ -9,7 +9,9 @@ services:
       - "3000:3000"
     volumes:
       - ../data:/app/data
-      - ../.env:/app/.env # Mount env file into container
+      - ../.env:/app/.env # Mount env file
+      - ../homecloud-sqlite:/app/sqlite-data # Mount sqlite dir (contains DB)
     environment:
       - PORT=3000
       - BASE_DIRECTORY=/app/data
+      - SQLITE_DB_PATH=/app/sqlite-data/homecloud.db

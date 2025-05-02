@@ -7,7 +7,10 @@
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
     "start:pm2": "pm2 start src/index.js --name homecloud-backend",
-    "stop:pm2": "pm2 stop homecloud-backend"
+    "stop:pm2": "pm2 stop homecloud-backend",
+    "db:init": "node scripts/init-db.js",
+    "create:admin": "node scripts/create-admin.js",
+    "install": "npm install && npm run db:init && npm run create:admin"
   },
   "comments": {
     "start": "Run the app in production with 'npm start'",
@@ -28,6 +31,8 @@
   },
   "homepage": "https://github.com/er-shrey/homecloud-backend#readme",
   "dependencies": {
+    "bcrypt": "^5.1.1",
+    "better-sqlite3": "^11.9.1",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
     "multer": "^1.4.5-lts.2",
