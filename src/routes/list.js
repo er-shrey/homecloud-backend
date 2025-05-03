@@ -47,7 +47,7 @@ const getThumbnailUrl = (relativePath, itemName, isDirectory) => {
       const thumbnailRelativePath = path
         .join(relativePath, ".thumbnails", expectedThumbPath)
         .replace(/\\/g, "/");
-      return `${thumbnailRelativePath}`;
+      return `/api/files/${thumbnailRelativePath}`;
     }
   }
 

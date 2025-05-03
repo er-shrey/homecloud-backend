@@ -165,3 +165,7 @@ GET /api/health
 ## 🧑‍💻 Author
 
 Built with ❤️ by [Shrey Jain](https://github.com/er-shrey)
+
+## Known Bugs:
+
+- [] Uploading files with same name and extension, replaces the older one
